@@ -1,2 +1,2 @@
 It may be dangerous to run on your own device. According to me you should run it on a virtual machine.
-Bonus: (I used Kali Linux)
+Edit: (I used Kali Linux)
