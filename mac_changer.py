@@ -1,37 +1,41 @@
-import subprocess   # runs code like run in terminal
-import optparse     # provides the user to assign a value to a variable and can send an informational text
-import re           # It is a library that allows the use of regular expressions. In this code, it is used to search for the MAC address.
+import subprocess   # Allows the execution of system commands (e.g., like using the terminal)
+import optparse     # Used to parse command-line options and arguments
+import re           # Regular expression module, used here for extracting the MAC address
 
+# Function to get user input from command-line arguments
 def get_user_input():
     parse_object = optparse.OptionParser()
-    parse_object.add_option("-i","--interface",dest="interface",help="interface to change!")
-    parse_object.add_option("-m","--mac",dest="mac_address",help="new mac address")
+    parse_object.add_option("-i", "--interface", dest="interface", help="Interface to change the MAC address for")
+    parse_object.add_option("-m", "--mac", dest="mac_address", help="New MAC address to assign")
 
-    return parse_object.parse_args()
+    return parse_object.parse_args()  # Returns parsed user input
 
-def change_mac_address(user_interface,user_mac_address):
-    subprocess.call(["ifconfig",user_interface,"down"])
-    subprocess.call(["ifconfig",user_interface,"hw","ether",user_mac_address])
-    subprocess.call(["ifconfig",user_interface,"up"])
+# Function to change the MAC address of a given network interface
+def change_mac_address(user_interface, user_mac_address):
+    subprocess.call(["ifconfig", user_interface, "down"])                     # Disable the network interface
+    subprocess.call(["ifconfig", user_interface, "hw", "ether", user_mac_address])  # Change the MAC address
+    subprocess.call(["ifconfig", user_interface, "up"])                       # Re-enable the network interface
 
+# Function to check the current MAC address of the interface after the change
 def control_new_mac(interface):
-    ifconfig = subprocess.check_output(["ifconfig",interface])
-    ifconfig = ifconfig.decode("utf-8")
-    new_mac = re.search(r"(\w{2}:){5}\w{2}",ifconfig)
+    ifconfig = subprocess.check_output(["ifconfig", interface])  # Run 'ifconfig' and get output
+    ifconfig = ifconfig.decode("utf-8")                           # Decode bytes to string
+    new_mac = re.search(r"(\w{2}:){5}\w{2}", ifconfig)           # Search for MAC address pattern using regex
 
     if new_mac:
-        return new_mac.group(0)
+        return new_mac.group(0)  # Return the matched MAC address
     else:
-        return None
+        return None  # If no MAC address found, return None
 
 
-
+# Main program logic
 print("MyMacChanger started")
-(user_input,arguments) = get_user_input()
-change_mac_address(user_input.interface,user_input.mac_address)
-finalized_mac = control_new_mac(user_input.interface)
+(user_input, arguments) = get_user_input()  # Get user-provided interface and MAC address
+change_mac_address(user_input.interface, user_input.mac_address)  # Attempt to change MAC
+finalized_mac = control_new_mac(user_input.interface)  # Get current MAC to verify change
 
+# Compare the MAC address after change with the user input
 if finalized_mac == user_input.mac_address:
-    print("Success!")
+    print("Success!")  # MAC address changed successfully
 else:
-    print("Error!")
+    print("Error!")    # MAC address change failed
