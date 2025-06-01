@@ -10,8 +10,6 @@ The developer is not responsible for any misuse, damage, or legal consequences r
 
 Use at your own risk.
 """
-
-
 import os
 from cryptography.fernet import Fernet
 
