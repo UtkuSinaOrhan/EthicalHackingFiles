@@ -69,5 +69,5 @@ class SocketListener:
             print(command_output)
 
 # Replace the IP and port below with your actual listener IP and port
-my_socket_listener = SocketListener("10.0.2.4", 8080)
+my_socket_listener = SocketListener("your_ip_address", "int type port number")
 my_socket_listener.start_listener()
